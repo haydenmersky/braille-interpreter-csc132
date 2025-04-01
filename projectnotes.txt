@@ -2,13 +2,13 @@
 Disassemble & add pulleys to all motors
 Look into pricing for speed controllers
 
-Reprint Braille wheel to be circular with a groove 
-    Re-orient braille wheel
-    Add space to braille wheel
-    Add space to belts
-        Don't glue belt until on shaft
-
 Bring prototype braille apparatuses to blind school to get feedback before next version
+    Reprint Braille wheel to be circular with a groove 
+        Re-orient braille wheel
+        Add space to braille wheel
+        Add space to belts
+            Don't glue belt until on shaft
+
 First feature to work on is text recognition via camera
 Second feature to work on is motors spinning
 
