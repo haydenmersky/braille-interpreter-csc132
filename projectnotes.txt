@@ -16,3 +16,20 @@ Nick - Software Lead
 Alex - Software Support
 Hayden - Hardware Lead
 Jadon - Hardware Support
+
+Blind Center Meet 04/03/25 & 04/04/25
+Belt Sucks
+    Belt is a little jumbled
+    Some letters too close together and some too far apart
+    D & H switched
+    Belt not proportional
+Wheel is Good
+    Great size and spacing
+    Definitely the winner idea
+Braille Machines IRL
+    Center for the blind has a few braille embossers
+    Take text from a file or thumb drive, then
+    emboss the braille onto paper like a printer
+    Braille embossers have numbers and contractions
+    Numbers are just the number sign (backwards L) then a character (A-J)
+    Needs at least 20ish characters
