@@ -4,10 +4,13 @@ from pytesseract import Output
  
 cap = cv2.VideoCapture(0)
 cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
- 
+
+freeze_frame = False
+
 while True:
-    # Capture frame-by-frame
-    ret, frame = cap.read()
+    # Capture frame-by-frame, unless 'f' is pressed
+    if not freeze_frame:
+        ret, frame = cap.read()
  
     d = pytesseract.image_to_data(frame, output_type=Output.DICT)
     n_boxes = len(d['text'])
@@ -21,8 +24,13 @@ while True:
  
     # Display the resulting frame
     cv2.imshow('frame', frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+
+    keyPressed = cv2.waitKey(1) & 0xFF
+    
+    if keyPressed == ord('q'):
         break
+    elif keyPressed == ord('f'):
+        freeze_frame = not freeze_frame
  
 # When everything done, release the capture
 cap.release()
