@@ -5,12 +5,16 @@ from pytesseract import Output
 cap = cv2.VideoCapture(0)
 cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
-freeze_frame = False
+freezeFrame = False
+grayscale = False
 
 while True:
     # Capture frame-by-frame, unless 'f' is pressed
-    if not freeze_frame:
+    if not freezeFrame:
         ret, frame = cap.read()
+        #Converts image to grayscale with the press of 'g' 
+        if grayscale:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
  
     d = pytesseract.image_to_data(frame, output_type=Output.DICT)
     n_boxes = len(d['text'])
@@ -30,7 +34,9 @@ while True:
     if keyPressed == ord('q'):
         break
     elif keyPressed == ord('f'):
-        freeze_frame = not freeze_frame
+        freezeFrame = not freezeFrame
+    elif keyPressed == ord('g'):
+        grayscale = not grayscale
  
 # When everything done, release the capture
 cap.release()

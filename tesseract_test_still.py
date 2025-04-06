@@ -3,7 +3,7 @@ import pytesseract
 import numpy as np
 from pytesseract import Output
  
-img_source = cv2.imread('coffee-ocr.jpg')
+img_source = cv2.imread('ocrTest.png')
  
  
 def get_grayscale(image):
