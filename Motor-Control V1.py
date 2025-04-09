@@ -8,3 +8,27 @@ for i in range(4):
     sleep(10)
     robot.right()
     sleep(1)
+
+
+class BrailleWheel(Robot):
+    def __init__(self,motor_pins):
+        Robot.__init__(motor=Motor(motor_pins))
+        self.motor = Motor(motor_pins)
+
+    @property
+    def motor(self):
+        return self.motor
+    
+    @motor.setter
+    def motor(self, motor):
+        self.motor = motor
+
+    def next_letter(self):
+        self.motor.forward()
+        sleep(1)
+        self.motor.stop()
+
+    def previous_letter(self):
+        self.motor.backward()
+        sleep(1)
+        self.motor.stop()
