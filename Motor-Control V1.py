@@ -9,6 +9,7 @@ for i in range(4):
     robot.right()
     sleep(1)
 
+SPEED = 0.5
 
 class BrailleWheel(Robot):
     def __init__(self,motor_pins):
@@ -25,10 +26,10 @@ class BrailleWheel(Robot):
 
     def next_letter(self):
         self.motor.forward()
-        sleep(1)
+        sleep(SPEED)
         self.motor.stop()
 
     def previous_letter(self):
         self.motor.backward()
-        sleep(1)
+        sleep(SPEED)
         self.motor.stop()
