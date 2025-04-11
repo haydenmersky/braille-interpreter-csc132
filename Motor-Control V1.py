@@ -1,34 +1,25 @@
-from gpiozero import Robot, Motor
+from gpiozero import Motor
 from time import sleep
-
 
 SPEED = 0.5
 
-class BrailleWheel(Motor):
-    def __init__(self,motor_pins: tuple):
-        Motor.__init__(self,forward =motor_pins[0], backward= motor_pins[1])
-        self.motor = Motor(forward=motor_pins[0],backward=motor_pins[1])
-
-    @property
-    def motor(self):
-        return self._motor
-    
-    @motor.setter
-    def motor(self, motor):
-        self._motor = motor
+class BrailleWheel:
+    def __init__(self, motor_pins: tuple):
+        # Initialize the Motor object directly
+        self.motor = Motor(forward=motor_pins[0], backward=motor_pins[1])
 
     def next_letter(self):
-        self.motor.forward()
-        sleep(SPEED)
-        self.motor.stop()
+        self.motor.forward()  # Move forward
+        sleep(SPEED)          # Wait for the desired duration
+        self.motor.stop()     # Stop the motor
 
     def previous_letter(self):
-        self.motor.backward()
-        sleep(SPEED)
-        self.motor.stop()
-
+        self.motor.backward() # Move backward
+        sleep(SPEED)          # Wait for the desired duration
+        self.motor.stop()     # Stop the motor
 
 ########################main######################
 
-m1 = BrailleWheel((4,24))
-m1.next_letter()
+# Create a BrailleWheel instance with motor pins (4, 24)
+m1 = BrailleWheel((4, 24))
+m1.next_letter()  # Call the next_letter method
