@@ -1,7 +1,7 @@
 from gpiozero import Motor
 from time import sleep
 
-SPEED = 0.5
+SPEED = 9
 
 class BrailleWheel:
     def __init__(self, motor_pins: tuple):
@@ -22,4 +22,9 @@ class BrailleWheel:
 
 # Create a BrailleWheel instance with motor pins (4, 24)
 m1 = BrailleWheel((4, 24))
-m1.next_letter()  # Call the next_letter method
+m2 = BrailleWheel((17,18))
+m1.next_letter()
+m2.next_letter()
+m1.previous_letter()
+m2.previous_letter()
+
