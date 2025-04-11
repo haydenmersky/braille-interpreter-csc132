@@ -1,20 +1,13 @@
 from gpiozero import Robot, Motor
 from time import sleep
 
-robot = Robot(left=Motor(4, 24), right=Motor(17, 18))
-
-for i in range(4):
-    robot.forward()
-    sleep(10)
-    robot.right()
-    sleep(1)
 
 SPEED = 0.5
 
-class BrailleWheel(Robot):
-    def __init__(self,motor_pins):
-        Robot.__init__(motor=Motor(motor_pins))
-        self.motor = Motor(motor_pins)
+class BrailleWheel(Motor):
+    def __init__(self,motor_pins: tuple):
+        Motor.__init__(self,forward =motor_pins[0], backward= motor_pins[1])
+        self.motor = Motor(forward=motor_pins[0],backward=motor_pins[1])
 
     @property
     def motor(self):
@@ -33,3 +26,9 @@ class BrailleWheel(Robot):
         self.motor.backward()
         sleep(SPEED)
         self.motor.stop()
+
+
+########################main######################
+
+m1 = BrailleWheel((4,24))
+m1.next_letter()
