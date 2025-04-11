@@ -1,7 +1,7 @@
 from gpiozero import Robot, Motor
 from time import sleep
 
-robot = Robot(left=Motor(4, 14), right=Motor(17, 18))
+robot = Robot(left=Motor(4, 24), right=Motor(17, 18))
 
 for i in range(4):
     robot.forward()
@@ -18,11 +18,11 @@ class BrailleWheel(Robot):
 
     @property
     def motor(self):
-        return self.motor
+        return self._motor
     
     @motor.setter
     def motor(self, motor):
-        self.motor = motor
+        self._motor = motor
 
     def next_letter(self):
         self.motor.forward()
