@@ -22,6 +22,8 @@ class BrailleWheel:
 # Create a BrailleWheel instance with motor pins (4, 24)
 m1 = BrailleWheel((16, 17))
 m2 = BrailleWheel((18,19))
+m1.value = 1
+m2.value =1
 m1.next_letter()
 m2.next_letter()
 m1.previous_letter()
