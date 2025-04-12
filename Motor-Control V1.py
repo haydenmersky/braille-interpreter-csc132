@@ -6,15 +6,14 @@ SPEED = 9
 class BrailleWheel:
     def __init__(self, motor_pins: tuple):
         self.motor = Motor(forward=motor_pins[0], backward=motor_pins[1])
-        self.value = 1
 
     def next_letter(self):
-        self.motor.forward()  
+        self.motor.forward(1)  
         sleep(SPEED)          
         self.motor.stop()  
 
     def previous_letter(self):
-        self.motor.backward()
+        self.motor.backward(-1)
         sleep(SPEED)          
         self.motor.stop()     
 
