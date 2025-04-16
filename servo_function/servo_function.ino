@@ -43,9 +43,20 @@ void setup() {
   for (int i = 0; i < 28; i++) {
     letterPositions[i] = (i + 1) * degree;
   }
+
+  Serial.begin(9600);
+  Serial.setTimeout(10);
+
 }
 
 void loop() {
   // Example: move all servos to different letters
- moveServosFromString("abc");
+ if (Serial.available() > 0) {
+   String strFromPi = Serial.readString();
+   strFromPi.trim();
+   Serial.print("Received: ");
+   Serial.println(strFromPi);
+   moveServosFromString(strFromPi.c_str());
+
+ }
 }
