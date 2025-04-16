@@ -27,11 +27,15 @@ void moveServo(int servoIndex, char c) {
   if (index != -1 && lastMoved[servoIndex] != c) {
     servos[servoIndex].attach(servoPins[servoIndex]);
     servos[servoIndex].write(servoPositions[index]);
-    delay(300); // wait for motion
+    delay(1000); // wait for motion
     servos[servoIndex].write(0); // return to zero
-    delay(1000);
     servos[servoIndex].detach();
     lastMoved[servoIndex] = c;
+  }
+}
+void moveServosFromString(const char* str) {
+  for (int i = 0; i < NUM_SERVOS && str[i] != '\0'; i++) {
+    moveServo(i, str[i]);
   }
 }
 
@@ -43,15 +47,5 @@ void setup() {
 
 void loop() {
   // Example: move all servos to different letters
-  moveServo(0, 'a');
-  moveServo(1, 'b');
-  moveServo(2, 'c');
-  moveServo(3, 'd');
-  moveServo(4, 'e');
-  moveServo(5, 'f');
-  moveServo(6, 'g');
-  moveServo(7, 'z');
-  moveServo(8, ' ');
-  moveServo(9, '#');
-  moveServo(10, 'a');
+ moveServosFromString("abc");
 }
