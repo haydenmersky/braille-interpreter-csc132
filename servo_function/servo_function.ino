@@ -4,7 +4,7 @@ const int NUM_SERVOS = 11;
 Servo servos[NUM_SERVOS];
 int servoPins[NUM_SERVOS] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
 
-const float degree = 12.8571; // degrees per character
+const float degree = 6.4285; // degrees per character based off of gear ratio 
 int letterPositions[28];
 char characters[28] = {
   'a','b','c','d','e','f','g','h','i','j',
