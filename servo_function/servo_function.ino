@@ -5,7 +5,7 @@ Servo servos[NUM_SERVOS];
 int servoPins[NUM_SERVOS] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
 
 const float degree = 12.8571; // degrees per character
-int servoPositions[28];
+int letterPositions[28];
 char characters[28] = {
   'a','b','c','d','e','f','g','h','i','j',
   'k','l','m','n','o','p','q','r','s','t',
@@ -26,7 +26,7 @@ void moveServo(int servoIndex, char c) {
   int index = getIndex(c);
   if (index != -1 && lastMoved[servoIndex] != c) {
     servos[servoIndex].attach(servoPins[servoIndex]);
-    servos[servoIndex].write(servoPositions[index]);
+    servos[servoIndex].write(letterPositions[index]);
     delay(1000); // wait for motion
     servos[servoIndex].write(0); // return to zero
     servos[servoIndex].detach();
@@ -34,14 +34,14 @@ void moveServo(int servoIndex, char c) {
   }
 }
 void moveServosFromString(const char* str) {
-  for (int i = 0; i < NUM_SERVOS && str[i] != '\0'; i++) {
+  for (int i = 0; i <= NUM_SERVOS && str[i] != '\0'; i++) {
     moveServo(i, str[i]);
   }
 }
 
 void setup() {
   for (int i = 0; i < 28; i++) {
-    servoPositions[i] = (i + 1) * degree;
+    letterPositions[i] = (i + 1) * degree;
   }
 }
 
