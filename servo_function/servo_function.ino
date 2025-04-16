@@ -1,16 +1,18 @@
 #include <Servo.h>
 
-Servo servo1, servo2, servo3, servo4, servo5, servo6;
-Servo servo7, servo8, servo9, servo10, servo11;
+const int NUM_SERVOS = 11;
+Servo servos[NUM_SERVOS];
+int servoPins[NUM_SERVOS] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
 
-const float degree = 12.8571;
+const float degree = 12.8571; // degrees per character
 int servoPositions[28];
 char characters[28] = {
   'a','b','c','d','e','f','g','h','i','j',
   'k','l','m','n','o','p','q','r','s','t',
-  'u','v','w','x','y','z',' ', '#'};
+  'u','v','w','x','y','z',' ', '#'
+};
 
-char lastMoved[11] = {0}; // track last character per servo
+char lastMoved[NUM_SERVOS] = {0}; // track last character per servo
 
 int getIndex(char c) {
   c = tolower(c);
@@ -20,56 +22,36 @@ int getIndex(char c) {
   return -1;
 }
 
-// Macro for defining servo move functions with attach/detach
-#define DEFINE_MOVE_SERVO_FN(NUM, PIN) \
-void moveServo##NUM(char c) { \
-  int index = getIndex(c); \
-  if (index != -1 && lastMoved[NUM - 1] != c) { \
-    servo##NUM.attach(PIN); \
-    servo##NUM.write(servoPositions[index]); \
-    delay(300); /* ensure motion finishes */ \
-    servo##NUM.write(0); /* return to zero before detaching */ \
-    delay(1000); \
-    servo##NUM.detach(); \
-    lastMoved[NUM - 1] = c; \
-  } \
+void moveServo(int servoIndex, char c) {
+  int index = getIndex(c);
+  if (index != -1 && lastMoved[servoIndex] != c) {
+    servos[servoIndex].attach(servoPins[servoIndex]);
+    servos[servoIndex].write(servoPositions[index]);
+    delay(300); // wait for motion
+    servos[servoIndex].write(0); // return to zero
+    delay(1000);
+    servos[servoIndex].detach();
+    lastMoved[servoIndex] = c;
+  }
 }
 
-
-// Define all 11 servo functions
-DEFINE_MOVE_SERVO_FN(1, 2)
-DEFINE_MOVE_SERVO_FN(2, 3)
-DEFINE_MOVE_SERVO_FN(3, 4)
-DEFINE_MOVE_SERVO_FN(4, 5)
-DEFINE_MOVE_SERVO_FN(5, 6)
-DEFINE_MOVE_SERVO_FN(6, 7)
-DEFINE_MOVE_SERVO_FN(7, 8)
-DEFINE_MOVE_SERVO_FN(8, 9)
-DEFINE_MOVE_SERVO_FN(9, 10)
-DEFINE_MOVE_SERVO_FN(10, 11)
-DEFINE_MOVE_SERVO_FN(11, 12)
-
 void setup() {
-  for (int i = 0; i < 26; i++) {
+  for (int i = 0; i < 28; i++) {
     servoPositions[i] = (i + 1) * degree;
   }
-  servoPositions[26] = 27 * degree;  // space
-  servoPositions[27] = 28 * degree;  // prefix
 }
 
 void loop() {
-  // Example: move all servos to 'a' (only once each)
-  moveServo1('a');
-  moveServo2('a');
-  moveServo3('a');
-  moveServo4('a');
-  moveServo5('a');
-  moveServo6('a');
-  moveServo7('a');
-  moveServo8('z');
-  moveServo9('a');
-  moveServo10('a');
-  moveServo11('a');
-
-
+  // Example: move all servos to different letters
+  moveServo(0, 'a');
+  moveServo(1, 'b');
+  moveServo(2, 'c');
+  moveServo(3, 'd');
+  moveServo(4, 'e');
+  moveServo(5, 'f');
+  moveServo(6, 'g');
+  moveServo(7, 'z');
+  moveServo(8, ' ');
+  moveServo(9, '#');
+  moveServo(10, 'a');
 }
