@@ -3,17 +3,27 @@ from tkinter import Text, Scrollbar
 from PIL import Image, ImageTk
 import customtkinter
 
+carry_over = ""  # Variable to hold leftover characters; used in the update_char_label function and
+                 # couldn't find any other way to do it without using a global variable
+
+word_archive = [] # List to hold the already loaded words
+
 def load_gui():
     # Create the main window
     root = customtkinter.CTk()
     root.title("Braille Interpreter")
     root.geometry("1000x700")  # Set the window size
+    
+    # Right Frame: Display the recognized lines
+    right_frame = customtkinter.CTkFrame(root, width=475, height=200)
+    right_frame.pack(side="right", fill="both", expand=True)
+    right_frame.pack_propagate(False)  # Prevent the frame from resizing to fit its contents
 
     # Bottom Frame: Display eleven characters at a time
-    bottom_frame = customtkinter.CTkFrame(root, height=100)
+    bottom_frame = customtkinter.CTkFrame(root, height=400)
     bottom_frame.pack(side="bottom", fill="x")
 
-    char_label = customtkinter.CTkLabel(bottom_frame, text="", font=("Arial", 24))
+    char_label = customtkinter.CTkLabel(bottom_frame, text="", font=("Arial", 32))
     char_label.pack(pady=10)
 
     # Left Frame: Display the image
@@ -21,39 +31,63 @@ def load_gui():
     left_frame.pack(side="left", fill="both", expand=True)
     left_frame.pack_propagate(False)  # Prevent the frame from resizing to fit its contents
 
-    # Right Frame: Display the recognized lines
-    right_frame = customtkinter.CTkFrame(root, width=475, height=200)
-    right_frame.pack(side="right", fill="both", expand=True)
-    right_frame.pack_propagate(False)  # Prevent the frame from resizing to fit its contents
-
     # Function to update the label with the next eleven characters
     def update_char_label(event=None):
+        global carry_over
         nonlocal current_index
         if recognized_text:
             # Initialize an empty string to hold the next characters
-            next_chars = ""
-        
+            next_chars = carry_over
+            carry_over = ""  # Reset carry_over for the next iteration
+
             # Iterate through the text starting from the current index
             while current_index < len(recognized_text):
                 char = recognized_text[current_index]
                 current_index += 1  # Increment current_index here to avoid infinite loop
-                if char == " ":  # Stop if a space is encountered
+
+                # Stop if the length reaches 11 characters
+                if len(next_chars) >= 11:
+                    carry_over += char  # Save the leftover character for the next press
                     break
+
+                # Add the character to the current string
                 next_chars += char
-        
+
+                # Stop if a space or newline is encountered
+                if char == " " or char == "\n":
+                    break
+
             # Update the label with the collected characters
             char_label.configure(text=next_chars)
-        
+            word_archive.append(next_chars)  # Add the current string to the word archive
+
             # Reset to the beginning if we reach the end of the text
             if current_index >= len(recognized_text):
                 current_index = 0
-        
-            # Update the label with the collected characters
-            char_label.configure(text=next_chars)
-        
-            # Reset to the beginning if we reach the end of the text
-            if current_index >= len(recognized_text):
-                current_index = 0
+                carry_over = ""  # Reset carry_over when we loop back to the start
+
+
+    # Function to update the label with the previous eleven characters
+    def revert_char_label(event=None):
+        nonlocal current_index
+        if word_archive:
+            # Remove the last added string from the archive
+            last_string = word_archive.pop()
+            current_index -= len(last_string)  # Decrement current_index by the length of the last string
+
+            # Ensure current_index does not go below 0
+            current_index = max(0, current_index)
+
+            # Update the label with the previous string if available
+            if word_archive:
+                char_label.configure(text=word_archive[-1])
+            else:
+                char_label.configure(text="")  # Clear the label if no previous string exists
+        else:
+            # If word_archive is empty, reset the label and current_index
+            char_label.configure(text="")
+            current_index = 0
+
 
     # Load the recognized_lines.txt content for the bottom frame
     try:
@@ -67,6 +101,7 @@ def load_gui():
 
     # Bind the spacebar key to update the label
     root.bind("<space>", update_char_label)
+    root.bind("<z>", revert_char_label) 
 
     # Add a scrollable text widget to display recognized lines
     text_scrollbar = Scrollbar(right_frame)
@@ -75,10 +110,6 @@ def load_gui():
     text_widget = Text(right_frame, wrap="word", yscrollcommand=text_scrollbar.set, font=("Arial", 12))
     text_widget.pack(expand=True, fill="both", padx=10, pady=10)
     text_scrollbar.config(command=text_widget.yview)
-
-    # Dynamically calculate the size of the text box
-    text_box_width = 380  # Approximate width of the text box
-    text_box_height = 500  # Approximate height of the text box
 
     # Load and display the image
     try:
