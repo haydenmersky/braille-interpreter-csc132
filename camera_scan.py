@@ -48,6 +48,8 @@ def loadImage():
 
     # Extract the recognized words
     lines = []
+
+    # docTR divides its information into different classes. We need to use the line and word class for extraction.
     for page in result_json['pages']:
         for block in page['blocks']:
             for line in block['lines']:
