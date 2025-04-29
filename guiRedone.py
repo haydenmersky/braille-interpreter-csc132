@@ -59,6 +59,9 @@ def load_gui():
     char_label = customtkinter.CTkLabel(bottom_frame, text="", font=("Arial", 32))
     char_label.pack(pady=4)
 
+    braille_label = customtkinter.CTkLabel(bottom_frame, text="", font=("Arial", 32))
+    braille_label.pack(pady=4)
+
     # Left Frame: Display the image
     left_frame = customtkinter.CTkFrame(root, width=475, height=600, fg_color="white", border_color="lightblue", border_width=4)
     left_frame.pack(side="left", fill="both", expand=True)
@@ -83,6 +86,26 @@ def load_gui():
         error_label = customtkinter.CTkLabel(image_container, text="Camera image not found.", font=("Arial", 16))
         error_label.pack(side="top")  # Place the error message below the header
 
+    brailleCharacters = {"a":"⠁", "b":"⠃", "c":"⠉", "d":"⠙", "e":"⠑", "f":"⠋", "g":"⠛", "h":"⠓",
+                        "i":"⠊", "j":"⠚", "k":"⠅", "l":"⠇", "m":"⠍", "n":"⠝", "o":"⠕", "p":"⠏",
+                        "q":"⠟", "r":"⠗", "s":"⠎", "t":"⠞", "u":"⠥", "v":"⠧", "w":"⠺", "x":"⠭",
+                        "y":"⠽", "z":"⠵"}
+    brailleNumbers = {"#":"⠼", "0":"⠴", "1":"⠁", "2":"⠃", "3":"⠉", "4":"⠙", "5":"⠑", "6":"⠋",
+                        "7":"⠛", "8":"⠓", "9":"⠊"}
+
+    def brailleTranslate(message):
+        nonlocal brailleCharacters, brailleNumbers
+        message = message.lower()
+        braille = ""
+        for char in message:
+            if char in brailleCharacters:
+                braille += brailleCharacters[char]
+            elif char in brailleNumbers:
+                braille += brailleNumbers[char]
+            else:
+                braille += " "
+        return braille
+
     current_index = 0
     
     # Function to update the character label with eleven characters at a time
@@ -90,10 +113,6 @@ def load_gui():
         global carry_over
         global word_archive
         nonlocal scannedText, current_index
-
-        if not scannedText.strip():  # If scannedText is empty or only contains whitespace
-            char_label.configure(text="End of Text")
-            return
 
         if current_index >= len(scannedText):  # If we've reached the end of the text
             char_label.configure(text="End of Text")
@@ -107,6 +126,17 @@ def load_gui():
         while current_index < len(scannedText):
             char = scannedText[current_index]
             current_index += 1  # Increment current_index here to avoid infinite loop
+
+            # Checks if the character is a number. In braille, numbers are preceded by a #.
+            # If the character is a number and the last character in next_chars is not a #, prefix it with a #
+            if char in brailleNumbers:
+                if len(next_chars) > 0:
+                    if next_chars[-1] in brailleNumbers:
+                        pass
+                    else:
+                        char = "#" + char
+                else:
+                    char = "#" + char
 
             # Stop if the length reaches 11 characters
             if len(next_chars) >= 11:
@@ -122,6 +152,7 @@ def load_gui():
 
         # Update the label with the collected characters
         char_label.configure(text=next_chars)
+        braille_label.configure(text=brailleTranslate(next_chars))  # Update the braille label
         word_archive.append(next_chars)  # Add the current string to the word archive
     
     def revert_char_label(event=None):
@@ -131,17 +162,18 @@ def load_gui():
         if not word_archive:
             char_label.configure(text="No history")
             return 
-        # Pop the last entry from word_archive
+        # Delete the last entry from word_archive
         last_string = word_archive.pop()
         # Decrement current_index by the length of the last string
         current_index -= len(last_string)
         current_index = max(0, current_index)
         # Update the label with the previous string if available
         char_label.configure(text=word_archive[-1])  # Display the previous string
+        braille_label.configure(text=brailleTranslate(word_archive[-1]))
             
     update_char_label()  # Display the first eleven characters initially
 
-    # Bind the spacebar key to update the label, and the z key to revert it
+    # Bind the spacebar key to update the label, and the z key to revert
     root.bind("<space>", update_char_label)
     root.bind("<z>", revert_char_label) 
 
