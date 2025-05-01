@@ -2,11 +2,20 @@ import tkinter
 from tkinter import Text, Scrollbar
 from PIL import Image, ImageTk
 import customtkinter
+import serial
+import time
+
+USING_ARDUINO = False
 
 carry_over = ""  # Variable to hold leftover characters; used in the update_char_label function and
                  # couldn't find any other way to do it without using a global variable
 
 word_archive = [] # List to hold the already loaded words
+
+is_processing = False # Flag to indicate if the program is currently processing a word
+
+if USING_ARDUINO:
+    arduino = serial.Serial('COM3', 9600, timeout=1)
 
 def load_gui():
     # Create the main window
@@ -49,7 +58,21 @@ def load_gui():
 
     scannedText = scannedText.replace("\n", " ")
 
-    # Bottom Frame: Display eleven characters at a time
+    # Bottom Frame 1: Button to use a new document
+    button_frame = customtkinter.CTkFrame(root, height=100, fg_color="white", border_color="lightblue", border_width=4)
+    button_frame.pack(side="bottom", fill="x")
+
+    # Add a button to the new frame
+    new_doc_button = customtkinter.CTkButton(button_frame, text="Use New Document", font=("Arial", 16), command=lambda: use_new_document())
+    new_doc_button.pack(pady=10)
+
+    # Define the function to handle the button click
+    def use_new_document():
+        # Logic to handle loading a new document
+        print("New document button clicked!")
+        # You can add functionality here to reset the GUI or load a new file
+
+    # Bottom Frame 2: Display eleven characters at a time
     bottom_frame = customtkinter.CTkFrame(root, height=400, fg_color="white", border_color="lightblue", border_width=4)
     bottom_frame.pack(side="bottom", fill="x")
 
@@ -68,12 +91,12 @@ def load_gui():
     left_frame.pack_propagate(False)  # Prevent the frame from resizing to fit its contents
 
     # Create a container frame for the image and its header
-    image_container = customtkinter.CTkFrame(left_frame)
-    image_container.pack(side="top", expand=True)  # Center the container vertically
+    image_container = customtkinter.CTkFrame(left_frame, fg_color="white", width=450, height=550)  # Adjust size to fit within the left frame
+    image_container.pack(side="top", padx=10, pady=10, expand=True)  # Add padding to prevent overflow
 
     # Add the image header label
     imageHeader_label = customtkinter.CTkLabel(image_container, text="Captured Image:", font=("Arial", 20))
-    imageHeader_label.pack(side="top")  # Add padding below the label
+    imageHeader_label.pack(side="top", pady=5)  # Add padding below the label
 
     # Load and display the image
     try:
@@ -81,10 +104,10 @@ def load_gui():
         img_tk = ImageTk.PhotoImage(img)
         img_label = customtkinter.CTkLabel(image_container, image=img_tk, text="")
         img_label.image = img_tk  # Keep a reference to avoid garbage collection
-        img_label.pack(side="top")  # Place the image below the header
+        img_label.pack(side="top", pady=5)  # Add padding around the image
     except FileNotFoundError:
         error_label = customtkinter.CTkLabel(image_container, text="Camera image not found.", font=("Arial", 16))
-        error_label.pack(side="top")  # Place the error message below the header
+        error_label.pack(side="top", pady=5)  # Add padding around the error message
 
     brailleCharacters = {"a":"⠁", "b":"⠃", "c":"⠉", "d":"⠙", "e":"⠑", "f":"⠋", "g":"⠛", "h":"⠓",
                         "i":"⠊", "j":"⠚", "k":"⠅", "l":"⠇", "m":"⠍", "n":"⠝", "o":"⠕", "p":"⠏",
@@ -106,15 +129,26 @@ def load_gui():
                 braille += " "
         return braille
 
+    # Function to send a string to the Arduino
+    if USING_ARDUINO:
+        def sendWord(word):
+            global arduino
+            arduino.write(word.encode())  # Send the word to the Arduino
+            time.sleep(0.1)
+
     current_index = 0
     
     # Function to update the character label with eleven characters at a time
     def update_char_label(event=None):
-        global carry_over
-        global word_archive
+        global carry_over, word_archive, is_processing
         nonlocal scannedText, current_index
 
-        if current_index >= len(scannedText):  # If we've reached the end of the text
+        if is_processing:  # If already processing, ignore the event
+            return
+        
+        is_processing = True  # Set the flag to indicate processing has started
+
+        if current_index > len(scannedText):  # If we've reached the end of the text
             char_label.configure(text="End of Text")
             return
 
@@ -153,7 +187,10 @@ def load_gui():
         # Update the label with the collected characters
         char_label.configure(text=next_chars)
         braille_label.configure(text=brailleTranslate(next_chars))  # Update the braille label
+        if USING_ARDUINO:
+            sendWord(next_chars)  # Send the string to the Arduino
         word_archive.append(next_chars)  # Add the current string to the word archive
+        is_processing = False  # Reset the flag to indicate processing has finished
     
     def revert_char_label(event=None):
         global carry_over
@@ -170,6 +207,8 @@ def load_gui():
         # Update the label with the previous string if available
         char_label.configure(text=word_archive[-1])  # Display the previous string
         braille_label.configure(text=brailleTranslate(word_archive[-1]))
+        if USING_ARDUINO:
+            sendWord(word_archive[-1])
             
     update_char_label()  # Display the first eleven characters initially
 
