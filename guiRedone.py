@@ -212,9 +212,9 @@ def load_gui():
             
     update_char_label()  # Display the first eleven characters initially
 
-    # Bind the spacebar key to update the label, and the z key to revert
-    root.bind("<space>", update_char_label)
-    root.bind("<z>", revert_char_label) 
+    # Bind LMB to update the label, and RMB to revert
+    root.bind("<Button-1>", update_char_label)
+    root.bind("<Button-3>", revert_char_label) 
 
     # Run the main loop
     root.mainloop()
