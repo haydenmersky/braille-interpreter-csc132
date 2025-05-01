@@ -3,6 +3,9 @@ from doctr.io import DocumentFile
 from doctr.models import ocr_predictor
 import json
 
+# Debug constant to determine if the program should use a pre-existing PDF or camera scan
+USE_PDF = True
+
 # Constant that determines if camera output is grayscale or not.
 # Grayscale generally makes OCR more accurate.
 GRAYSCALE = True
@@ -11,7 +14,7 @@ GRAYSCALE = True
 chosenImage = "cameraScan.png"
 
 # Prompt user for input to choose image source
-if input("Use pre-existing scan or camera? (p/c) ") == 'p':
+if USE_PDF:
     chosenImage = "testPDF.png"
 else:
     chosenImage = "cameraScan.png"
@@ -70,7 +73,6 @@ def loadImage():
     
     print("Lines saved to recognized_words.txt")
     # Show the results of the OCR process
-    result.show()
     print("Image loaded.")
 
 print("Loading model...")

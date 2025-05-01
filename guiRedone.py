@@ -4,6 +4,7 @@ from PIL import Image, ImageTk
 import customtkinter
 import serial
 import time
+import subprocess
 
 USING_ARDUINO = False
 
@@ -16,6 +17,13 @@ is_processing = False # Flag to indicate if the program is currently processing 
 
 if USING_ARDUINO:
     arduino = serial.Serial('COM3', 9600, timeout=1)
+
+# Function to run the camera_scan.py script
+def run_camera_scan():
+    try:
+        subprocess.run(["python", "camera_scan.py"], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error running camera_scan.py: {e}")
 
 def load_gui():
     # Create the main window
@@ -62,15 +70,16 @@ def load_gui():
     button_frame = customtkinter.CTkFrame(root, height=100, fg_color="white", border_color="lightblue", border_width=4)
     button_frame.pack(side="bottom", fill="x")
 
-    # Add a button to the new frame
-    new_doc_button = customtkinter.CTkButton(button_frame, text="Use New Document", font=("Arial", 16), command=lambda: use_new_document())
-    new_doc_button.pack(pady=10)
+    # Adds the button to use a new document
+    newDoc_button = customtkinter.CTkButton(button_frame, text="Use New Document", font=("Arial", 16), command=lambda: use_new_document())
+    newDoc_button.pack(pady=10)
 
     # Define the function to handle the button click
     def use_new_document():
-        # Logic to handle loading a new document
-        print("New document button clicked!")
-        # You can add functionality here to reset the GUI or load a new file
+        run_camera_scan()  # Run the camera scan script again
+        root.destroy()  # Close the current window
+        load_gui()  # Reload the GUI to update the displayed text
+        
 
     # Bottom Frame 2: Display eleven characters at a time
     bottom_frame = customtkinter.CTkFrame(root, height=400, fg_color="white", border_color="lightblue", border_width=4)
@@ -93,8 +102,8 @@ def load_gui():
     # Create a container frame for the image and its header
     image_container = customtkinter.CTkFrame(left_frame, fg_color="white", width=450, height=550)  # Adjust size to fit within the left frame
     image_container.pack(side="top", padx=10, pady=10, expand=True)  # Add padding to prevent overflow
-
-    # Add the image header label
+    
+    # Adds the image header label
     imageHeader_label = customtkinter.CTkLabel(image_container, text="Captured Image:", font=("Arial", 20))
     imageHeader_label.pack(side="top", pady=5)  # Add padding below the label
 
@@ -150,6 +159,7 @@ def load_gui():
 
         if current_index > len(scannedText):  # If we've reached the end of the text
             char_label.configure(text="End of Text")
+            braille_label.configure(text=brailleTranslate("End of Text"))
             return
 
         # Initialize an empty string to hold the next characters
@@ -196,8 +206,10 @@ def load_gui():
         global carry_over
         global word_archive
         nonlocal scannedText, current_index
+        # Check if there are any words in the archive to revert to
         if not word_archive:
-            char_label.configure(text="No history")
+            char_label.configure(text="No History")
+            braille_label.configure(text=brailleTranslate("No History"))
             return 
         # Delete the last entry from word_archive
         last_string = word_archive.pop()
@@ -216,8 +228,14 @@ def load_gui():
     root.bind("<Button-1>", update_char_label)
     root.bind("<Button-3>", revert_char_label) 
 
+    # Bind mouse wheel scrolling
+    root.bind("<MouseWheel>", lambda event: update_char_label() if event.delta > 0 else revert_char_label())
+
     # Run the main loop
     root.mainloop()
+
+# Run the camera scan script to capture the image
+run_camera_scan()
 
 # Call the function to load the GUI
 load_gui()
