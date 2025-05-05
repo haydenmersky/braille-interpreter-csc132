@@ -2,22 +2,20 @@ import cv2
 from doctr.io import DocumentFile
 from doctr.models import ocr_predictor
 import json
+import sys
 
-# Debug constant to determine if the program should use a pre-existing PDF or camera scan
-USE_PDF = True
+# Read the mode argument from the command line
+mode = sys.argv[1] if len(sys.argv) > 1 else "pdf1"
 
 # Constant that determines if camera output is grayscale or not.
 # Grayscale generally makes OCR more accurate.
 GRAYSCALE = True
 
 # Global variable that determines which image to use for OCR
-chosenImage = "cameraScan.png"
-
-# Prompt user for input to choose image source
-if USE_PDF:
-    chosenImage = "testPDF.png"
-else:
+if mode == "camera":
     chosenImage = "cameraScan.png"
+elif mode == "pdf1":
+    chosenImage = "testPDF.png"
 
 def takePhoto():
     print("Starting capture...")
@@ -79,5 +77,6 @@ print("Loading model...")
 # Load the OCR predictor model from doctr
 model = ocr_predictor(pretrained=True)
 print("Model loaded.")
-takePhoto()
+if mode == "camera":
+    takePhoto()
 loadImage()
