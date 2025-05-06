@@ -226,8 +226,8 @@ def load_gui(method):  # 'method' parameter is for determining the mode of opera
                 else:
                     char = "#" + char
 
-            # Stops if the length reaches 11 characters
-            if len(next_chars) >= 11:
+            # Stops if the length reaches 10 characters
+            if len(next_chars) >= 10:
                 carry_over += char  # Save the leftover character for the next press
                 break
 
