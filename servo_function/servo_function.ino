@@ -12,6 +12,14 @@ char characters[28] = {
   'u','v','w','x','y','z',' ', '#'
 };
 
+void HomeServos(){
+  for (int i =0 ; i <= NUM_SERVOS; i++){
+    servos[i].attach(servoPins[i]);
+    servos[i].write(letterPositions[0]);
+    delay(30);
+  }
+}
+
 
 int getIndex(char c) {
   c = tolower(c);
@@ -46,6 +54,11 @@ void setup() {
 
 }
 
-void loop() {
-moveServosFromString("hhhhhhhhhhhhhhhhhhhhhhhhh");
+void loop() 
+  if (Serial.available() > 0) {
+    String strFromPi = Serial.readString();
+    strFromPi.trim();
+    Serial.print("Received: ");
+    Serial.println(strFromPi);
+    moveServosFromString(strFromPi.c_str());
 }
