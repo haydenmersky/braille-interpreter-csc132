@@ -49,6 +49,8 @@ void setup() {
     delay(30);
   }
 
+  void HomeServos();
+
   Serial.begin(9600);
   Serial.setTimeout(10);
 
