@@ -4,8 +4,8 @@ from doctr.models import ocr_predictor
 import json
 import sys
 
-# Reads the mode argument from the command line
-mode = sys.argv[1] if len(sys.argv) > 1 else "pdf1"
+# Reads the mode argument from the command line, defaults to the first PDF image if not provided.
+mode = sys.argv[1] if len(sys.argv) > 1 else "testPDF.png"
 
 # Constant that determines if camera output is grayscale or not.
 # Grayscale generally makes OCR more accurate.
@@ -47,6 +47,9 @@ def loadImage():
     # Sets result to the image passed through the OCR predictor model
     result = model(img)
 
+    # Assigns the result in JSON format to a variable 
+    result_json = result.export()
+
     # Extracts the recognized words
     lines = []
 
@@ -57,11 +60,11 @@ def loadImage():
                 line_text = []
                 for word in line['words']:
                     if word != '-':
-                        # Extracts the word text
+                        # Extracts the text
                         line_text.append(word['value'])  
                 lines.append(" ".join(line_text))
     
-    # Prints the extracted words (unnecessary, just helpful)
+    # Prints the extracted words
     print("Recognized Lines:")
     for i, line in enumerate(lines, 1):
         print(f"Line {i}: {line}")
@@ -78,6 +81,6 @@ print("Loading model...")
 # Loads the OCR predictor model from doctr
 model = ocr_predictor(pretrained=True)
 print("Model loaded.")
-if mode == "camera":
+if mode == "cameraScan.png":
     takePhoto()
 loadImage()

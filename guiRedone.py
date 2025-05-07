@@ -6,9 +6,10 @@ import serial
 import time
 import subprocess
 import pyttsx3
+import threading
 
 # Boolean to determine if the program should use serial communication with Arduino
-USING_ARDUINO = False
+USING_ARDUINO = True
 
 # Initialize the text-to-speech engine
 engine = pyttsx3.init()  
@@ -23,22 +24,31 @@ word_archive = []
 # Flag to indicate if the program is currently processing a word
 is_processing = False 
 
+# Similar as above, flag for if the TTS voice is already talking
+is_talking = False
+
 # Boolean that determines if the mouse wheel is being used to scroll through the text
 mouse_wheel = False
+
+# Boolean for later to allow for a double press system for the space bar function
+# The first time won't do anything, but the second time will trigger the space bar function
+firstSpace = True
 
 if USING_ARDUINO:
     arduino = serial.Serial('COM3', 9600, timeout=1)
 
 # Function to speak the text using pyttsx3
 def speak_text(text):
-    # Speech rate
-    engine.setProperty('rate', 150)
-    # Volume
-    engine.setProperty('volume', 1)
-    # Speaks the text
-    engine.say(text)
-     # Wait for the speech to finish
-    engine.runAndWait() 
+    def run_speech():
+        # Speech rate
+        engine.setProperty('rate', 150)
+        # Volume
+        engine.setProperty('volume', 1)
+        # Speak the text
+        engine.say(text)
+        engine.runAndWait()  # Blocking, but runs in a separate thread
+    # Start the speech in a new thread
+    threading.Thread(target=run_speech).start()
 
 # Function to run the camera_scan.py script
 def run_camera_scan(mode):
@@ -47,8 +57,17 @@ def run_camera_scan(mode):
     except subprocess.CalledProcessError:
         print(f"Error running camera_scan.py")
 
+# Function for the TTS welcome message
+def welcomeMessage(event=None):
+    global is_talking
+    if is_talking:
+        return
+    is_talking = True
+    speak_text("Welcome! Use the left and right mouse buttons to move forward or backward through the text respectively. Press space twice to scan a new document. Press the mouse wheel to repeat this message.")
+    is_talking = False
+
 # 'method' is for determining the mode of operation (camera or PDF), so we can use the proper image
-def load_gui(method):  
+def load_gui(method, firstTime):  
     # Creates the main window
     root = customtkinter.CTk()
     root.title("Braille Interpreter")
@@ -110,17 +129,17 @@ def load_gui(method):
     # Function to handle the button click
     def scan_new_document():
         # Run camera_scan.py with the camera mode
-        run_camera_scan("camera")  
+        run_camera_scan("cameraScan.png")  
         # Close the current window
         root.destroy()  
         # Reload the GUI to update the displayed text
-        load_gui("camera")  
+        load_gui("cameraScan.png", False)  
 
     def use_preexisting_document(pdf):
         # Runs camera_scan.py with the specified PDF
         run_camera_scan(pdf)  
         root.destroy()
-        load_gui(pdf)
+        load_gui(pdf, False)
         
     # Bottom Frame 2: Displays eleven characters at a time
     bottom_frame = customtkinter.CTkFrame(root, height=400, fg_color="white", border_color="lightblue", border_width=4)
@@ -230,7 +249,8 @@ def load_gui(method):
     current_index = 0
     
     # Function to update the character label with eleven characters at a time
-    def update_char_label(event=None):
+    # event=None has to be there for a function to be bound to a key for some reason
+    def update_char_label(event=None): 
         global carry_over, word_archive, is_processing
         nonlocal scannedText, current_index
 
@@ -323,24 +343,52 @@ def load_gui(method):
     # Displays the first eleven characters initially
     update_char_label()  
 
+    # Function to handle the space double press system
+    # The first press will do nothing, but the second press will trigger the space bar function
+    def spacePress(event=None):
+        global firstSpace
+        if firstSpace:
+            print("First space press detected.")
+            root.bind("<space>", spacePress)
+        else:
+            print("Second space press detected.")
+            scan_new_document()
+        firstSpace = not firstSpace
+
+    # Function to handle mouse wheel control of the label
+    # Couldn't figure out how to set this up as a lambda function
+    def mouseWheelControl(event=None): 
+        global mouse_wheel
+        if not mouse_wheel:
+            root.bind("<MouseWheel>", lambda event: revert_char_label() if event.delta > 0 else update_char_label())
+            mouse_wheel = True
+            print("Mouse wheel scrolling enabled.")
+        else:
+            root.unbind("<MouseWheel>")
+            mouse_wheel = False
+            print("Mouse wheel scrolling disabled.")
+
+    
     # Binds LMB to update the label, and RMB to revert
     root.bind("<Button-1>", update_char_label)
     root.bind("<Button-3>", revert_char_label) 
 
+    # Binds MMB to repeat the welcome message
+    root.bind("<Button-2>", welcomeMessage)
+
     # Also binds x and z to update and revert respectively just in the case of no mouse
     root.bind("<x>", update_char_label)
     root.bind("<z>", revert_char_label)
-    
-    # Function to handle mouse wheel control of the label
-    # Couldn't figure out how to set this up as a lambda function
-    def mouseWheelControl():
-        if not mouse_wheel:
-            root.bind("<MouseWheel>", lambda event: revert_char_label() if event.delta > 0 else update_char_label())
-        else:
-            root.unbind("<MouseWheel>")
 
     # Binds ctrl to toggle for mouse wheel scrolling
     root.bind("<Control_L>", mouseWheelControl)
+    root.bind("<Control_R>", mouseWheelControl)
+
+    # Binds the space bar to the double press system
+    root.bind("<space>", spacePress)
+
+    if firstTime:
+        welcomeMessage()
 
     # Runs the main loop
     root.mainloop()
@@ -349,4 +397,6 @@ def load_gui(method):
 run_camera_scan("testPDF.png")
 
 # Calls the function to load the GUI
-load_gui("testPDF.png")
+load_gui("testPDF.png", True)
+
+engine.stop()  # Stops the TTS engine when the program exits
