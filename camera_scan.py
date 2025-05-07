@@ -12,15 +12,15 @@ mode = sys.argv[1] if len(sys.argv) > 1 else "pdf1"
 GRAYSCALE = True
 
 # Global variable that determines which image to use for OCR
-if mode == "camera":
-    chosenImage = "cameraScan.png"
-elif mode == "pdf1":
-    chosenImage = "testPDF.png"
+chosenImage = mode
 
 def takePhoto():
     print("Starting capture...")
-    # Capture from the default camera (0)
+    # Capture from the default camera ()
     cap = cv2.VideoCapture(0)
+    # Set the resolution (e.g., 1920x1080 for Full HD)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)  # Set the width
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)  # Set the height
     # ret acts as a boolean to check if the frame was captured correctly
     # frame is the actual image captured from the camera
     ret, frame = cap.read()
@@ -28,6 +28,8 @@ def takePhoto():
         # Convert the frame to grayscale if GRAYSCALE is set to True
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     # Saves the frame to a file named 'cameraScan.png'
+    # Rotate the image 90 degrees clockwise
+    frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
     cv2.imwrite('cameraScan.png', frame)
     print("Capture complete.")
     # Release the capture to free up the camera for other processes

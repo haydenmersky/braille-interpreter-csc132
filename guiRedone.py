@@ -5,8 +5,11 @@ import customtkinter
 import serial
 import time
 import subprocess
+import pyttsx3
 
 USING_ARDUINO = False
+
+engine = pyttsx3.init()  # Initialize the text-to-speech engine
 
 carry_over = ""  # Variable to hold leftover characters; used in the update_char_label function and
                  # couldn't find any other way to do it without using a global variable
@@ -17,6 +20,13 @@ is_processing = False # Flag to indicate if the program is currently processing 
 
 if USING_ARDUINO:
     arduino = serial.Serial('COM3', 9600, timeout=1)
+
+# Function to speak the text using pyttsx3
+def speak_text(text):
+    engine.setProperty('rate', 150)  # Set the speech rate
+    engine.setProperty('volume', 1)  # Set the volume (0.0 to 1.0)
+    engine.say(text)  # Speak the text
+    engine.runAndWait()  # Wait for the speech to finish
 
 # Function to run the camera_scan.py script
 def run_camera_scan(mode):
@@ -75,8 +85,11 @@ def load_gui(method):  # 'method' parameter is for determining the mode of opera
     newDoc_button = customtkinter.CTkButton(button_frame, text="Scan New Document", font=("Trebuchet MS", 16), command=lambda: scan_new_document())
     newDoc_button.pack(side="left", pady=10, padx=10)
 
-    preexistingDoc_button = customtkinter.CTkButton(button_frame, text="Use PDF Ex. 1", font=("Trebuchet MS", 16), command=lambda: use_preexisting_document("pdf1"))
-    preexistingDoc_button.pack(side="left", pady=10)
+    preexistingDoc_button1 = customtkinter.CTkButton(button_frame, text="Use PDF Ex. 1", font=("Trebuchet MS", 16), command=lambda: use_preexisting_document("testPDF.png"))
+    preexistingDoc_button1.pack(side="left", pady=10)
+
+    preexistingDoc_button2 = customtkinter.CTkButton(button_frame, text="Use PDF Ex. 2", font=("Trebuchet MS", 16), command=lambda: use_preexisting_document("syllabusPDF.png"))
+    preexistingDoc_button2.pack(side="left", pady=10, padx=10)
 
     # Function to handle the button click
     def scan_new_document():
@@ -87,7 +100,7 @@ def load_gui(method):  # 'method' parameter is for determining the mode of opera
     def use_preexisting_document(pdf):
         run_camera_scan(pdf)  # Runs camera_scan.py with the specified PDF
         root.destroy()
-        load_gui("pdf1")
+        load_gui(pdf)
         
     # Bottom Frame 2: Displays eleven characters at a time
     bottom_frame = customtkinter.CTkFrame(root, height=400, fg_color="white", border_color="lightblue", border_width=4)
@@ -108,34 +121,34 @@ def load_gui(method):  # 'method' parameter is for determining the mode of opera
     left_frame.pack_propagate(False)  # Prevent the frame from resizing to fit its contents
 
     # Creates a container frame for the image and its header
-    image_container = customtkinter.CTkFrame(left_frame, fg_color="white", width=450, height=550)  # Adjust size to fit within the left frame
-    image_container.pack(side="top", padx=10, pady=0, expand=True)  # Add padding to prevent overflow
+    image_container = customtkinter.CTkFrame(left_frame, fg_color="white", width=450, height=550)
+    image_container.pack(side="top", padx=10, pady=0, expand=True)
     
     # Adds the image header label
-    imageHeader_label = customtkinter.CTkLabel(image_container, text="Captured Image:", font=("Trebuchet MS", 20))
-    imageHeader_label.pack(side="top", pady=5)  # Add padding below the label
+    if method == "cameraScan.png":
+        imageHeader_label = customtkinter.CTkLabel(image_container, text="Captured Image:", font=("Trebuchet MS", 20))
+    else:
+        imageHeader_label = customtkinter.CTkLabel(image_container, text="Scanned Document:", font=("Trebuchet MS", 20))
+    imageHeader_label.pack(side="top", pady=5)
 
-    # Loads and displays the image
-    if method == "camera":
+    # Function to load the image into the GUI
+    def loadImage(image):
         try:
-            img = Image.open("cameraScan.png")
+            img = Image.open(image)
+            frame_width, frame_height = 450, 550
+            img.thumbnail((frame_width, frame_height), Image.Resampling.LANCZOS)  # Resizes image while maintaining aspect ratio
             img_tk = ImageTk.PhotoImage(img)
             img_label = customtkinter.CTkLabel(image_container, image=img_tk, text="")
             img_label.pack(side="top", pady=5)
         except FileNotFoundError:
-            error_label = customtkinter.CTkLabel(image_container, text="Camera image not found.", font=("Trebuchet MS", 16))
-            error_label.pack(side="top", pady=5)
-    elif method == "pdf1":
-        try:
-            img = Image.open("testPDF.png")
-            frame_width, frame_height = 450, 550  # Dimensions of the frame
-            img.thumbnail((frame_width, frame_height), Image.Resampling.LANCZOS)
-            img_tk = ImageTk.PhotoImage(img)
-            img_label = customtkinter.CTkLabel(image_container, image=img_tk, text="")
-            img_label.pack(side="top", pady=5)
-        except FileNotFoundError:
-            error_label = customtkinter.CTkLabel(image_container, text="PDF not found.", font=("Trebuchet MS", 16))
-            error_label.pack(side="top", pady=5)
+            if method == "cameraScan.png":
+                error_label = customtkinter.CTkLabel(image_container, text="Camera image not found.", font=("Trebuchet MS", 16))
+                error_label.pack(side="top", pady=5)
+            else:
+                error_label = customtkinter.CTkLabel(image_container, text="PDF image not found.", font=("Trebuchet MS", 16))
+                error_label.pack(side="top", pady=5)
+
+    loadImage(method)
 
     brailleCharacters = {"a":"⠁", "b":"⠃", "c":"⠉", "d":"⠙", "e":"⠑", "f":"⠋", "g":"⠛", "h":"⠓",
                         "i":"⠊", "j":"⠚", "k":"⠅", "l":"⠇", "m":"⠍", "n":"⠝", "o":"⠕", "p":"⠏",
@@ -144,6 +157,7 @@ def load_gui(method):  # 'method' parameter is for determining the mode of opera
     brailleNumbers = {"#":"⠼", "0":"⠴", "1":"⠁", "2":"⠃", "3":"⠉", "4":"⠙", "5":"⠑", "6":"⠋",
                         "7":"⠛", "8":"⠓", "9":"⠊"}
 
+    # Function to translate the given text to braille
     def brailleTranslate(message):
         nonlocal brailleCharacters, brailleNumbers
         message = message.lower()
@@ -157,6 +171,7 @@ def load_gui(method):  # 'method' parameter is for determining the mode of opera
                 braille += " "
         return braille
 
+    # Function to bolden the text in the text widget that the display label is currently showing
     def boldenTextForward(length):
         text_widget.tag_remove("bold", "1.0", "end")  # Unbold any bold text
         if length > 0:
@@ -169,11 +184,11 @@ def load_gui(method):  # 'method' parameter is for determining the mode of opera
             except Exception:
                 print(f"Error boldening text")
 
+    # Same function as above, just in reverse
     def boldenTextBackward(length):
         text_widget.tag_remove("bold", "1.0", "end")
         if length > 0:
             try:
-                # Finds the start and end indices of the text to bolden
                 start_index = f"1.0 + {current_index - length} chars"
                 end_index = f"1.0 + {current_index} chars"
                 text_widget.tag_add("bold", start_index, end_index)  # Adds the bold tag
@@ -207,7 +222,7 @@ def load_gui(method):  # 'method' parameter is for determining the mode of opera
             return
 
         # Initializes an empty string to hold the next characters
-        next_chars = carry_over
+        next_chars = carry_over # carry_over is used to hold the leftover character from the previous iteration
         carry_over = ""  # Resets carry_over for the next iteration
 
         # Iterates through the text starting from the current index
@@ -280,14 +295,21 @@ def load_gui(method):  # 'method' parameter is for determining the mode of opera
     root.bind("<Button-1>", update_char_label)
     root.bind("<Button-3>", revert_char_label) 
 
-    # Binds mouse wheel scrolling
-    root.bind("<MouseWheel>", lambda event: revert_char_label() if event.delta > 0 else update_char_label())
+    # Also binds x and z to update and revert respectively just in the case of no mouse
+    root.bind("<x>", update_char_label)
+    root.bind("<z>", revert_char_label)
+
+    def mouseWheelControl():
+        root.bind("<MouseWheel>", lambda event: revert_char_label() if event.delta > 0 else update_char_label())
+
+    # Binds ctrl to allow for mouse wheel scrolling
+    root.bind("<Control_L>", mouseWheelControl)
 
     # Runs the main loop
     root.mainloop()
 
 # Runs the camera scan script to capture the image
-run_camera_scan("pdf1")
+run_camera_scan("testPDF.png")
 
 # Calls the function to load the GUI
-load_gui("pdf1")
+load_gui("testPDF.png")
