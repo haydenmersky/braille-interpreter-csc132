@@ -34,6 +34,8 @@ mouse_wheel = False
 # The first time won't do anything, but the second time will trigger the space bar function
 firstSpace = True
 
+# Looks for the Arduino and if it can't find it, it will just move on as if it isn't connected
+# (Because it isn't)
 try:
     arduino = serial.Serial('COM3', 9600, timeout=1)
     print("Arduino connected.")
@@ -45,14 +47,17 @@ except serial.SerialException:
 # Function to speak the text using pyttsx3
 def speak_text(text):
     def run_speech():
-        # Speech rate
+        # Sets the speech rate
         engine.setProperty('rate', 150)
-        # Volume
+        # Sets th volume
         engine.setProperty('volume', 1)
-        # Speak the text
+        # Speaks the text
         engine.say(text)
+        # runAndWait() is literally the only reason we're using threading
+        # Doesn't work without it, but if you have it then the entire program
+        #     stops until the speech is done
         engine.runAndWait() 
-    # Start the speech in a new thread
+    # Starts the speech in a new thread
     threading.Thread(target=run_speech).start()
 
 # Function to run the camera_scan.py script
@@ -126,6 +131,7 @@ def load_gui(method, firstTime):
     newDoc_button.pack(side="left", pady=10, padx=23)
 
     preexistingDoc_button1 = customtkinter.CTkButton(button_frame, text="Use PDF Ex. 1", font=("Trebuchet MS", 16), command=lambda: use_preexisting_document("northernlightsPDF.png.png"))
+    # Excluding padx so I only have to worry about two buttons' numbers instead of four
     preexistingDoc_button1.pack(side="left", pady=10)
 
     preexistingDoc_button2 = customtkinter.CTkButton(button_frame, text="Use PDF Ex. 2", font=("Trebuchet MS", 16), command=lambda: use_preexisting_document("syllabusPDF.png"))
@@ -196,6 +202,7 @@ def load_gui(method, firstTime):
 
     load_image(method)
 
+    # Braille characters and numbers dictionary for translation
     brailleCharacters = {"a":"⠁", "b":"⠃", "c":"⠉", "d":"⠙", "e":"⠑", "f":"⠋", "g":"⠛", "h":"⠓",
                         "i":"⠊", "j":"⠚", "k":"⠅", "l":"⠇", "m":"⠍", "n":"⠝", "o":"⠕", "p":"⠏",
                         "q":"⠟", "r":"⠗", "s":"⠎", "t":"⠞", "u":"⠥", "v":"⠧", "w":"⠺", "x":"⠭",
@@ -204,7 +211,7 @@ def load_gui(method, firstTime):
     brailleNumbers = {"#":"⠼", "0":"⠴", "1":"⠁", "2":"⠃", "3":"⠉", "4":"⠙", "5":"⠑", "6":"⠋",
                         "7":"⠛", "8":"⠓", "9":"⠊"}
 
-    # Function to translate the given text to braille
+    # Function to translate the given text to braille, builds the braille string character by character
     def brailleTranslate(message):
         nonlocal brailleCharacters, brailleNumbers
         message = message.lower()
@@ -363,7 +370,7 @@ def load_gui(method, firstTime):
         firstSpace = not firstSpace
 
     # Function to handle mouse wheel control of the label
-    # Couldn't figure out how to set this up as a lambda function
+    # Couldn't figure out how to set this up as a lambda function, since it's technically two
     def mouseWheelControl(event=None): 
         global mouse_wheel
         if not mouse_wheel:
@@ -394,6 +401,8 @@ def load_gui(method, firstTime):
     # Binds the space bar to the double press system
     root.bind("<space>", spacePress)
 
+    # Doesn't welcome the user if the program is being reloaded
+    # Literally the only reason firstTime is a parameter
     if firstTime:
         welcomeMessage()
 
@@ -406,4 +415,5 @@ run_camera_scan("testPDF.png")
 # Calls the function to load the GUI
 load_gui("testPDF.png", True)
 
-engine.stop()  # Stops the TTS engine when the program exits
+# Stops the TTS engine when the program exits
+engine.stop()  
