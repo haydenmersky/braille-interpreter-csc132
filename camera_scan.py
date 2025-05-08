@@ -5,7 +5,7 @@ import json
 import sys
 
 # Reads the mode argument from the command line, defaults to the first PDF image if not provided.
-mode = sys.argv[1] if len(sys.argv) > 1 else "testPDF.png"
+mode = sys.argv[1] if len(sys.argv) > 1 else "cameraScan.png"
 
 # Constant that determines if camera output is grayscale or not.
 # Grayscale generally makes OCR more accurate.
@@ -17,7 +17,7 @@ chosenImage = mode
 def takePhoto():
     print("Starting capture...")
     # Captures from the default camera (0), when properly set up, switch to 1.
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
     # Sets the resolution (e.g., 1920x1080 for Full HD)
     # Sets the width
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920) 

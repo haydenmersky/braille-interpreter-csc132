@@ -34,8 +34,13 @@ mouse_wheel = False
 # The first time won't do anything, but the second time will trigger the space bar function
 firstSpace = True
 
-if USING_ARDUINO:
+try:
     arduino = serial.Serial('COM3', 9600, timeout=1)
+    print("Arduino connected.")
+    USING_ARDUINO = True
+except serial.SerialException:
+    print("Arduino not found.")
+    USING_ARDUINO = False
 
 # Function to speak the text using pyttsx3
 def speak_text(text):
@@ -46,7 +51,7 @@ def speak_text(text):
         engine.setProperty('volume', 1)
         # Speak the text
         engine.say(text)
-        engine.runAndWait()  # Blocking, but runs in a separate thread
+        engine.runAndWait() 
     # Start the speech in a new thread
     threading.Thread(target=run_speech).start()
 
@@ -118,13 +123,16 @@ def load_gui(method, firstTime):
 
     # Adds the buttons to use a new document
     newDoc_button = customtkinter.CTkButton(button_frame, text="Scan New Document", font=("Trebuchet MS", 16), command=lambda: scan_new_document())
-    newDoc_button.pack(side="left", pady=10, padx=10)
+    newDoc_button.pack(side="left", pady=10, padx=23)
 
-    preexistingDoc_button1 = customtkinter.CTkButton(button_frame, text="Use PDF Ex. 1", font=("Trebuchet MS", 16), command=lambda: use_preexisting_document("testPDF.png"))
+    preexistingDoc_button1 = customtkinter.CTkButton(button_frame, text="Use PDF Ex. 1", font=("Trebuchet MS", 16), command=lambda: use_preexisting_document("northernlightsPDF.png.png"))
     preexistingDoc_button1.pack(side="left", pady=10)
 
     preexistingDoc_button2 = customtkinter.CTkButton(button_frame, text="Use PDF Ex. 2", font=("Trebuchet MS", 16), command=lambda: use_preexisting_document("syllabusPDF.png"))
-    preexistingDoc_button2.pack(side="left", pady=10, padx=10)
+    preexistingDoc_button2.pack(side="left", pady=10, padx=23)
+
+    preexistingDoc_button3 = customtkinter.CTkButton(button_frame, text="Use Ideal Scan", font=("Trebuchet MS", 16), command=lambda: use_preexisting_document("idealScan.png"))
+    preexistingDoc_button3.pack(side="left", pady=10)
 
     # Function to handle the button click
     def scan_new_document():
@@ -162,7 +170,6 @@ def load_gui(method, firstTime):
     image_container = customtkinter.CTkFrame(left_frame, fg_color="white", width=450, height=550)
     image_container.pack(side="top", padx=10, pady=0, expand=True)
     
-    # Adds the image header label
     if method == "cameraScan.png":
         imageHeader_label = customtkinter.CTkLabel(image_container, text="Captured Image:", font=("Trebuchet MS", 20))
     else:
