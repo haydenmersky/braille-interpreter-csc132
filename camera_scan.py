@@ -9,7 +9,7 @@ mode = sys.argv[1] if len(sys.argv) > 1 else "cameraScan.png"
 
 # Constant that determines if camera output is grayscale or not.
 # Grayscale generally makes OCR more accurate.
-GRAYSCALE = True
+GRAYSCALE = False
 
 # Global variable that determines which image to use for OCR
 chosenImage = mode
@@ -30,7 +30,7 @@ def takePhoto():
         # Convert the frame to grayscale if GRAYSCALE is set to True
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     # Rotates the image 90 degrees clockwise
-    frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
+    frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
     # Saves the frame to a file named 'cameraScan.png'
     cv2.imwrite('cameraScan.png', frame)
     print("Capture complete.")

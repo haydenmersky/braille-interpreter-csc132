@@ -134,11 +134,11 @@ def load_gui(method, firstTime):
     # Excluding padx so I only have to worry about two buttons' numbers instead of four
     preexistingDoc_button1.pack(side="left", pady=10)
 
-    preexistingDoc_button2 = customtkinter.CTkButton(button_frame, text="Use PDF Ex. 2", font=("Trebuchet MS", 16), command=lambda: use_preexisting_document("syllabusPDF.png"))
-    preexistingDoc_button2.pack(side="left", pady=10, padx=23)
-
     preexistingDoc_button3 = customtkinter.CTkButton(button_frame, text="Use Ideal Scan", font=("Trebuchet MS", 16), command=lambda: use_preexisting_document("idealScan.png"))
-    preexistingDoc_button3.pack(side="left", pady=10)
+    preexistingDoc_button3.pack(side="right", pady=10, padx=23)
+
+    preexistingDoc_button2 = customtkinter.CTkButton(button_frame, text="Use PDF Ex. 2", font=("Trebuchet MS", 16), command=lambda: use_preexisting_document("syllabusPDF.png"))
+    preexistingDoc_button2.pack(side="right", pady=10)
 
     # Function to handle the button click
     def scan_new_document():
@@ -387,8 +387,9 @@ def load_gui(method, firstTime):
     root.bind("<Button-1>", update_char_label)
     root.bind("<Button-3>", revert_char_label) 
 
-    # Binds MMB to repeat the welcome message
+    # Binds MMB and v to repeat the welcome message
     root.bind("<Button-2>", welcomeMessage)
+    root.bind("<v>", welcomeMessage) 
 
     # Also binds x and z to update and revert respectively just in the case of no mouse
     root.bind("<x>", update_char_label)
